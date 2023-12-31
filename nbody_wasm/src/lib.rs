@@ -1,64 +1,44 @@
-#[cfg(target_arch="wasm32")]
+use std::f64;
 use wasm_bindgen::prelude::*;
 
-use winit::{
-    event::*,
-    event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder,
-};
+#[wasm_bindgen(start)]
+fn run() {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let canvas = document.get_element_by_id("canvas").unwrap();
+    let canvas: web_sys::HtmlCanvasElement = canvas
+        .dyn_into::<web_sys::HtmlCanvasElement>()
+        .map_err(|_| ())
+        .unwrap();
 
-#[cfg_attr(target_arch="wasm32", wasm_bindgen(start))]
-pub fn run() {
-    cfg_if::cfg_if! {
-        if #[cfg(target_arch = "wasm32")] {
-            std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-            console_log::init_with_level(log::Level::Warn).expect("Couldn't initialize logger");
-        } else {
-            env_logger::init();
-        }
-    }
-    
-    let event_loop = EventLoop::new();
-    let window = WindowBuilder::new().build(&event_loop).unwrap();
+    let context = canvas
+        .get_context("2d")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::CanvasRenderingContext2d>()
+        .unwrap();
 
+    context.begin_path();
 
-    #[cfg(target_arch = "wasm32")]
-    {
-        // Winit prevents sizing with CSS, so we have to set
-        // the size manually when on web.
-        use winit::dpi::PhysicalSize;
-        window.set_inner_size(PhysicalSize::new(450, 400));
-        
-        use winit::platform::web::WindowExtWebSys;
-        web_sys::window()
-            .and_then(|win| win.document())
-            .and_then(|doc| {
-                let dst = doc.get_element_by_id("wasm-example")?;
-                let canvas = web_sys::Element::from(window.canvas());
-                dst.append_child(&canvas).ok()?;
-                Some(())
-            })
-            .expect("Couldn't append canvas to document body.");
-    }
+    // Draw the outer circle.
+    context
+        .arc(75.0, 75.0, 50.0, 0.0, f64::consts::PI * 2.0)
+        .unwrap();
 
-    event_loop.run(move |event, _, control_flow| match event {
-        Event::WindowEvent {
-            ref event,
-            window_id,
-        } if window_id == window.id() => match event {
-            WindowEvent::CloseRequested
-            | WindowEvent::KeyboardInput {
-                input:
-                    KeyboardInput {
-                        state: ElementState::Pressed,
-                        virtual_keycode: Some(VirtualKeyCode::Escape),
-                        ..
-                    },
-                ..
-            } => *control_flow = ControlFlow::Exit,
-            _ => {}
-        },
-        _ => {}
-    });
+    // Draw the mouth.
+    context.move_to(110.0, 75.0);
+    context.arc(75.0, 75.0, 35.0, 0.0, f64::consts::PI).unwrap();
+
+    // Draw the left eye.
+    context.move_to(65.0, 65.0);
+    context
+        .arc(60.0, 65.0, 5.0, 0.0, f64::consts::PI * 2.0)
+        .unwrap();
+
+    // Draw the right eye.
+    context.move_to(95.0, 65.0);
+    context
+        .arc(90.0, 65.0, 5.0, 0.0, f64::consts::PI * 2.0)
+        .unwrap();
+
+    context.stroke();
 }
-

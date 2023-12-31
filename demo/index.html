@@ -1,13 +1,22 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="en-US">
+ 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Today's Date</title>
+</head>
+ 
+<body>
+    <canvas id="myCanvas" width="1024" height="1024" style="border:1px solid #000000; background-color: #000000;">
+    <script type="module">
+        import init, { run } from './pkg/nbody_wasm.js';
+        async function main() {
+            await init();
+            run();
+        }
+        main();
+    </script>
+</body>
+ 
 </html>

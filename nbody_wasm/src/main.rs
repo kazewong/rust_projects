@@ -1,5 +1,5 @@
-use nbody_wasm::run;
+use nbody_wasm;
 
 fn main() {
-    run();
+    nbody_wasm::run();
 }

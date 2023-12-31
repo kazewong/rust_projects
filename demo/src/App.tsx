@@ -1,15 +1,15 @@
-import init, {greet} from "../pkg";
-
 import './App.css'
+import init, {greet} from "../pkg/test_wasm.js"
 
 function App() {
 
-  init().then((_exports) => {
+  init().then(() => {
     greet();
-    });
+  }
+  )
+
   return (
     <>
-
     </>
   )
 }

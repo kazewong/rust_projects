@@ -10,13 +10,12 @@
 <body>
     <canvas id="canvas" width="512" height="512" style="border:1px solid ;">
     <script type="module">
-        import init, { greet_async, greet } from './pkg/test_wasm.js';
+        import init, { run } from './pkg/wgpu_wasm.js';
         async function main() {
             await init();
-            await greet_async();
-            greet();
+            run();
         }
-        await main();
+        main();
     </script>
 </body>
  

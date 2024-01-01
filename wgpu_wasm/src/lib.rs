@@ -51,7 +51,14 @@ pub async fn run() {
                 ..
             } => {
                 info!("Redraw requested");
-                
+                context.update();
+                match context.render() {
+                    Ok(_) => {}
+                    // Reconfigure the surface if lost
+                    Err(wgpu::SurfaceError::Lost) => context.resize(context.size),
+                    // All other errors (Outdated, Timeout) should be resolved by the next frame
+                    Err(e) => eprintln!("{:?}", e),
+                }
             },
             _ => ()
         }

@@ -28,6 +28,8 @@ pub async fn run() {
         .expect("failed to create window");    
     debug!("Created window");
 
+    let mut context = render::Context::new(window).await;
+
     event_loop.set_control_flow(ControlFlow::Wait);
 
     // Running the event loop
@@ -42,13 +44,14 @@ pub async fn run() {
             },
             Event::AboutToWait => {
                 info!("About to wait");
-                window.request_redraw();
+                context.window().request_redraw();
             },
             Event::WindowEvent { 
                 event: WindowEvent::RedrawRequested,
                 ..
             } => {
                 info!("Redraw requested");
+                
             },
             _ => ()
         }

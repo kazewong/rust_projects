@@ -1,9 +1,11 @@
+mod render;
+mod runtime;
+
 use console_log;
 use log::{debug, info};
 use wasm_bindgen::prelude::*;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 
-mod runtime;
 
 #[wasm_bindgen(start)]
 pub async fn run() {

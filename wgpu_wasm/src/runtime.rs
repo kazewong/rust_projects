@@ -2,7 +2,6 @@ use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
 use winit::window::Window;
 
-
 pub fn get_canvas() -> HtmlCanvasElement {
     web_sys::window()
         .and_then(|win| win.document())

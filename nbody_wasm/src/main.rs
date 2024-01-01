@@ -1,5 +1,5 @@
 use nbody_wasm;
 
 fn main() {
-    nbody_wasm::run();
+    pollster::block_on(nbody_wasm::run());
 }

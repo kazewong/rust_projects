@@ -1,7 +1,7 @@
 use console_log;
 use log::{debug, info};
 use wasm_bindgen::prelude::*;
-use winit::{event_loop::EventLoop, window::WindowBuilder};
+use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::WindowBuilder};
 
 mod runtime;
 
@@ -25,4 +25,24 @@ pub async fn run() {
             })
         .expect("failed to create window");    
     debug!("Created window");
+
+    // Running the event loop
+    event_loop.run(move |event, elwt|{
+        match event{
+            Event::WindowEvent{
+                event: WindowEvent::CloseRequested,
+                ..
+            } => {
+                info!("Window closed");
+                elwt.exit();
+            },
+            Event::AboutToWait => {
+                info!("About to wait");
+                window.request_redraw();
+            },
+            _ => ()
+        }
+    });
+
+
 }

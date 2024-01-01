@@ -26,8 +26,10 @@ pub async fn run() {
         .expect("failed to create window");    
     debug!("Created window");
 
+    event_loop.set_control_flow(ControlFlow::Wait);
+
     // Running the event loop
-    event_loop.run(move |event, elwt|{
+    let _ = event_loop.run(move |event, elwt|{
         match event{
             Event::WindowEvent{
                 event: WindowEvent::CloseRequested,
@@ -39,6 +41,12 @@ pub async fn run() {
             Event::AboutToWait => {
                 info!("About to wait");
                 window.request_redraw();
+            },
+            Event::WindowEvent { 
+                event: WindowEvent::RedrawRequested,
+                ..
+            } => {
+                info!("Redraw requested");
             },
             _ => ()
         }

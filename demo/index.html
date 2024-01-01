@@ -10,10 +10,10 @@
 <body>
     <canvas id="canvas" width="512" height="512" style="border:1px solid ;">
     <script type="module">
-        import init, { run } from './pkg/nbody_wasm.js';
+        import init, { add } from './pkg/test_wasm.js';
         async function main() {
             await init();
-            await run();
+            add();
         }
         main();
     </script>

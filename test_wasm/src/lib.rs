@@ -14,4 +14,9 @@ extern {
 pub fn greet() {
     alert("Hello, World!");
 }
+
+#[wasm_bindgen]
+pub async fn greet_async() {
+    alert("Hello, World!");
+}
 }

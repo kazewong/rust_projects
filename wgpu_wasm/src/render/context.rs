@@ -1,7 +1,7 @@
 use std::iter;
 use log::info;
 use wgpu;
-use winit::{window::{Window, self}, event::WindowEvent};
+use winit::{window::{Window}, event::WindowEvent};
 
 pub struct Context {
     pub surface: wgpu::Surface,
@@ -17,18 +17,28 @@ impl Context{
     pub async fn new(window: Window) -> Self {
         let size = window.inner_size();
 
+        info!("Window size: {}x{}", size.width, size.height);
+
         // The instance is a handle to our GPU
         // Backends::all => Vulkan + Metal + DX12 + Browser WebGPU
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
             ..Default::default()
         });
-        
+
+        info!("Created instance");
+
         // # Safety
         //
         // The surface needs to live as long as the window that created it.
         // State owns the window, so this should be safe.
-        let surface = unsafe { instance.create_surface(&window) }.unwrap();
+
+        info!("{:?}", window.id());
+        let surface = unsafe { 
+            instance.create_surface(&window).expect("Failed to create surface")
+        };
+
+        info!("Created surface");
 
         let adapter = instance.request_adapter(
             &wgpu::RequestAdapterOptions {
@@ -37,6 +47,8 @@ impl Context{
                 force_fallback_adapter: false,
             },
         ).await.unwrap();
+
+        info!("Created adapter");
 
         let (device, queue) = adapter.request_device(
             &wgpu::DeviceDescriptor {
@@ -52,6 +64,8 @@ impl Context{
             },
             None, // Trace path
         ).await.unwrap();
+
+        info!("Created device and queue");
 
         let surface_caps = surface.get_capabilities(&adapter);
         // Shader code in this tutorial assumes an sRGB surface texture. Using a different
@@ -72,6 +86,8 @@ impl Context{
             view_formats: vec![],
         };
         surface.configure(&device, &config);
+
+        info!("Configured surface");
 
         Self {
             surface,

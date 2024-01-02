@@ -78,8 +78,8 @@ impl Context{
         let config = wgpu::SurfaceConfiguration {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
             format: surface_format,
-            width: 256,//size.width,
-            height: 256,//size.height,
+            width: size.width,
+            height: size.height,
             present_mode: surface_caps.present_modes[0],
             alpha_mode: surface_caps.alpha_modes[0],
             view_formats: vec![],
@@ -114,7 +114,7 @@ impl Context{
     }
 
     #[allow(unused_variables)]
-    fn input(&mut self, event: &WindowEvent) -> bool {
+    pub fn input(&mut self, event: &WindowEvent) -> bool {
         false
     }
 
@@ -155,7 +155,7 @@ impl Context{
         }
 
         self.queue.submit(iter::once(encoder.finish()));
-        // output.present();
+        output.present();
 
         Ok(())
     }

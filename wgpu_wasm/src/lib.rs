@@ -1,8 +1,7 @@
 mod render;
-mod runtime;
 
 use console_log;
-use log::{debug, info};
+use log::{info};
 use wasm_bindgen::prelude::*;
 use winit::{event::*, event_loop::{ControlFlow, EventLoop}, window::{Window, WindowBuilder}};
 
@@ -33,7 +32,7 @@ pub async fn run() {
             Some(())
         })
         .expect("Couldn't append canvas to document body.");
-        debug!("Created window");
+        info!("Created window");
     }
 
     info!(" Window size: {}x{}", window.outer_size().width, window.outer_size().height);
@@ -79,7 +78,7 @@ pub async fn run() {
             Event::RedrawEventsCleared => {
                 // RedrawRequested will only trigger once, unless we manually
                 // request it.
-                context.window().request_redraw();
+                // context.window().request_redraw();
             }
             _ => {}
         }

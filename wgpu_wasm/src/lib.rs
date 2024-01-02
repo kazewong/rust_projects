@@ -13,24 +13,28 @@ pub async fn run() {
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
     console_log::init_with_level(log::Level::Debug).expect("error initializing log");
 
-    // Getting the canvas element
-    let canvas = runtime::get_canvas();
-    let (width, height) = (canvas.client_width(), canvas.client_height());
-    debug!("Acquired canvas with size {}x{}", width, height);
-
-    // Creating the window
     let event_loop = EventLoop::new().unwrap();
-    // let window = WindowBuilder::new()
-    //         .with_min_inner_size(winit::dpi::LogicalSize::new(width, height))
-    //     .build(&event_loop)
-    //     .expect("failed to create window");
-    let window = Window::new(&event_loop).unwrap();
-    // let  = window.request_inner_size(winit::dpi::LogicalSize::new(width, height));
-    debug!("Created window");
+    let window = WindowBuilder::new()
+    .with_inner_size(winit::dpi::PhysicalSize::new(512, 512))
+    .build(&event_loop).unwrap();
+    #[cfg(target_arch = "wasm32")]
+    {
+        use winit::platform::web::WindowExtWebSys;
+        web_sys::window()
+        .and_then(|win| win.document())
+        .and_then(|doc| {
+            let dst = doc.get_element_by_id("canvas")?;
+            let canvas = web_sys::Element::from(window.canvas().unwrap());
+            dst.append_child(&canvas).ok()?;
+            Some(())
+        })
+        .expect("Couldn't append canvas to document body.");
+        debug!("Created window");
+    }
 
-    info!("{:?}", winit::dpi::LogicalSize::new(width, height));
     info!("Window size: {}x{}", window.inner_size().width, window.inner_size().height);
 
+    let _ = window.request_inner_size(winit::dpi::PhysicalSize::new(400, 200));
     let mut context = render::Context::new(window).await;
 
     event_loop.set_control_flow(ControlFlow::Wait);
@@ -47,10 +51,7 @@ pub async fn run() {
                 info!("Window closed");
                 elwt.exit();
             },
-            Event::AboutToWait => {
-                info!("About to wait");
-                context.window().request_redraw();
-            },
+
             Event::WindowEvent { 
                 event: WindowEvent::RedrawRequested,
                 ..

@@ -33,7 +33,6 @@ impl Context{
         // The surface needs to live as long as the window that created it.
         // State owns the window, so this should be safe.
 
-        info!("{:?}", window.id());
         let surface = unsafe { 
             instance.create_surface(&window).expect("Failed to create surface")
         };
@@ -79,8 +78,8 @@ impl Context{
         let config = wgpu::SurfaceConfiguration {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
             format: surface_format,
-            width: size.width,
-            height: size.height,
+            width: 256,//size.width,
+            height: 256,//size.height,
             present_mode: surface_caps.present_modes[0],
             alpha_mode: surface_caps.alpha_modes[0],
             view_formats: vec![],
@@ -156,7 +155,7 @@ impl Context{
         }
 
         self.queue.submit(iter::once(encoder.finish()));
-        output.present();
+        // output.present();
 
         Ok(())
     }

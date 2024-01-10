@@ -1,6 +1,7 @@
 use std::vec;
 
 mod physics;
+mod simulation;
 
 fn main() {
     let particle1 = physics::Particle::new([1.0, 0.0, 0.0], [0.0, -4.0, 0.0], 1.0, 1.0);

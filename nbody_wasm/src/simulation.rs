@@ -1,4 +1,7 @@
+use log::info;
+
 use wgpu;
+use winit::window::Window;
 
 struct Context{
     surface: wgpu::Surface,
@@ -13,19 +16,92 @@ struct Context{
 }
 
 impl Context{
-    fn init(
-
+    pub async fn init(
         num_particles: u32,
+        window: Window
     ) -> Self{
+
+        let size = window.inner_size();
+
+        info!("Window size: {}x{}", size.width, size.height);
+
+        // The instance is a handle to our GPU
+        // Backends::all => Vulkan + Metal + DX12 + Browser WebGPU
+        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
+            backends: wgpu::Backends::all(),
+            ..Default::default()
+        });
+
+        info!("Created instance");
+
+        // # Safety
+        //
+        // The surface needs to live as long as the window that created it.
+        // State owns the window, so this should be safe.
+
+        let surface = unsafe { 
+            instance.create_surface(&window).expect("Failed to create surface")
+        };
+
+        info!("Created surface");
+
+        let adapter = instance.request_adapter(
+            &wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::default(),
+                compatible_surface: Some(&surface),
+                force_fallback_adapter: false,
+            },
+        ).await.unwrap();
+
+        info!("Created adapter");
+
+        let (device, queue) = adapter.request_device(
+            &wgpu::DeviceDescriptor {
+                features: wgpu::Features::empty(),
+                // WebGL doesn't support all of wgpu's features, so if
+                // we're building for the web, we'll have to disable some.
+                limits: if cfg!(target_arch = "wasm32") {
+                    wgpu::Limits::downlevel_webgl2_defaults()
+                } else {
+                    wgpu::Limits::default()
+                },
+                label: None,
+            },
+            None, // Trace path
+        ).await.unwrap();
+
+        info!("Created device and queue");
+
+        let surface_caps = surface.get_capabilities(&adapter);
+        // Shader code in this tutorial assumes an sRGB surface texture. Using a different
+        // one will result in all the colors coming out darker. If you want to support non
+        // sRGB surfaces, you'll need to account for that when drawing to the frame.
+        let surface_format = surface_caps.formats.iter()
+            .copied()
+            .filter(|f| f.is_srgb())
+            .next()
+            .unwrap_or(surface_caps.formats[0]);
+        let config = wgpu::SurfaceConfiguration {
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+            format: surface_format,
+            width: size.width,
+            height: size.height,
+            present_mode: surface_caps.present_modes[0],
+            alpha_mode: surface_caps.alpha_modes[0],
+            view_formats: vec![],
+        };
+        surface.configure(&device, &config);
+
+        info!("Configured surface");
 
         // Initialize particle buffers
 
         // Initialize compute shader
 
-        let compute_shader = wgpu::ShaderModuleDescriptor {
+        let compute_shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: None,
-            source: wgpu::ShaderSource::Wgsl(include_str!("compute.wgsl")),
-        };
+            source: wgpu::ShaderSource::Wgsl(include_str!("compute.wgsl").into()),
+        });
 
         // Initialize compute bind group
 
@@ -38,7 +114,7 @@ impl Context{
                     ty: wgpu::BindingType::Buffer {
                         ty: wgpu::BufferBindingType::Storage { read_only: true },
                         has_dynamic_offset: false,
-                        min_binding_size: wgpu::BufferSize::new((num_particles * 16) as _),
+                        min_binding_size: wgpu::BufferSize::new((num_particles * 24) as _),
                     },
                     count: None,
                 },
@@ -48,7 +124,7 @@ impl Context{
                     ty: wgpu::BindingType::Buffer {
                         ty: wgpu::BufferBindingType::Storage { read_only: true },
                         has_dynamic_offset: false,
-                        min_binding_size: wgpu::BufferSize::new((num_particles * 16) as _),
+                        min_binding_size: wgpu::BufferSize::new((num_particles * 24) as _),
                     },
                     count: None,
                 },
@@ -81,15 +157,15 @@ impl Context{
 
 
         Context{
-            surface: surface,
-            device: device,
-            queue: queue,
+            surface,
+            device,
+            queue,
 
             particle_buffer: Vec::new(),
             vertex_buffer: wgpu::Buffer,
 
             // render_pipeline: wgpu::RenderPipeline,
-            compute_pipeline: wgpu::ComputePipeline,
+            compute_pipeline,
         }
     }
 
@@ -124,7 +200,7 @@ impl Context{
 
         {
             // compute pass
-            let mut compute_pass = command_encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
+            let mut compute_pass = command_enconder.begin_compute_pass(&wgpu::ComputePassDescriptor {
                 label: None,
                 timestamp_writes: None,
             });
@@ -132,6 +208,7 @@ impl Context{
             // compute_pass.set_bind_group(0, &self.particle_bind_groups[self.frame_num % 2], &[]);
             // compute_pass.dispatch_workgroups(self.work_group_count, 1, 1);
         }
+        self.queue.submit(Some(command_enconder.finish()));
 
         // {
         //     // render pass
